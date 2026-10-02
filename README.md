@@ -15,7 +15,7 @@ Relative paths resolve against the home dir; absolute paths are used as-is.
 
 
 ```bash
-./rce-http -route /invocations -addr :8080 -home /workspace -route
+./rce-http -route /invocations -addr :8080 -home /workspace
 ```
 
 - `GET /ping` health check
