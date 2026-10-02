@@ -39,6 +39,7 @@ func main() {
 		log.Fatalf("get working directory: %v", err)
 	}
 	addr := flag.String("addr", ":8080", "listen address")
+	route := flag.String("route", "/invocations", "invocation endpoint path")
 	homeFlag := flag.String("home", cwd, "default home dir, overridable per request with ?homeDir=")
 	flag.Parse()
 
@@ -46,7 +47,11 @@ func main() {
 		writeJSON(w, http.StatusOK, output{"status": "Healthy"})
 	})
 
-	http.HandleFunc("POST /invocations", func(w http.ResponseWriter, r *http.Request) {
+	if !strings.HasPrefix(*route, "/") {
+		log.Fatalf("route must start with /")
+	}
+
+	http.HandleFunc("POST "+*route, func(w http.ResponseWriter, r *http.Request) {
 		homeDir := *homeFlag
 		if q := r.URL.Query().Get("home"); q != "" {
 			homeDir = q
@@ -64,7 +69,7 @@ func main() {
 		writeJSON(w, http.StatusOK, output{"output": invoke(r.Context(), filepath.Clean(homeDir), req)})
 	})
 
-	log.Printf("listening on %s (home %s)", *addr, *homeFlag)
+	log.Printf("listening on %s%s (home %s)", *addr, *route, *homeFlag)
 	log.Fatal(http.ListenAndServe(*addr, nil))
 }
 
